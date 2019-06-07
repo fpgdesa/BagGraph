@@ -3,13 +3,16 @@ package com.cefet.bag.graph;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
@@ -31,6 +34,7 @@ import register.LevelSetAccumulatorRegister;
 import register.SetDifferenceAccumulatorRegister;
 import structure.Bag;
 import structure.Node;
+import structure.Tuple;
 
 public class App 
 {
@@ -191,29 +195,17 @@ public class App
 			setDifference.reset();
 		}
 
-		for(LevelBag l: level.collect()) {
-			for( Pair<Node, Integer> a:l.getSetLevel()) {
-				System.out.println("nó " + a.getValue0().getItem() + 
-						" - nível " + a.getValue1());
-			}
-		}
+//		for(LevelBag l: level.collect()) {
+//			for( Pair<Node, Integer> a:l.getSetLevel()) {
+//				System.out.println("nó " + a.getValue0().getItem() + 
+//						" - nível " + a.getValue1());
+//			}
+//		}
 
-		//		level.map(f->{
-		//			
-		//			Map<Integer, Integer> mapLevel = new HashMap<Integer,Integer>();
-		//			for( Pair<Node, Integer> a:f.getSetLevel()) {
-		//				if(!mapLevel.containsKey(a.getValue1())) {
-		//					mapLevel.put(a.getValue1(), 1);
-		//				}else {
-		//					int value =+ a.getValue1();
-		//					mapLevel.put(a.getValue1(), mapLevel.get(value));
-		//				}				
-		//			}
-		//		return mapLevel;
-		//		}).foreach(f->{
-		//			f.forEach((k,v)->
-		//			System.out.println("Nível : " + k + " Contêm : " + v + "Vértices"));
-		//			});
+		level.foreach(f->{
+			Map<Integer,Integer> map = f.getLevelConsolidate();
+			System.out.println(map);
+		});
 
 		spark.close();
 	}
